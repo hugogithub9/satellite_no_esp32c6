@@ -59,7 +59,7 @@ mod data {
             //put the value of orientation on output
             if state.send==true {
                 let _ = output.data.add_value(state.quat);
-                println!("Data sent !")
+                println!("Data sent at t={}!", state.clock+state.sigma)
             }
             
             
@@ -123,7 +123,7 @@ mod calculator {
         fn lambda(state: &Self::State, output: &mut Self::Output) {
             //put the value of orientation on output
             let _ = output.position.add_value(state.orientation);
-            println!("Orientation sent !")
+            println!("Orientation sent at t={}!", state.clock+state.sigma);
         }
 
         fn ta(state: &Self::State) -> f64 {
@@ -133,6 +133,7 @@ mod calculator {
         fn delta_ext(state: &mut Self::State, e: f64, input: &Self::Input) {
             state.sigma -= e;
             state.clock += e;
+            state.sigma = 3.;
             //quaternion register : 8bytes -> wLSB, wMSB, xLSB, xMSB, yLSB, yMSB, zLSB, zMSB
             /*quaternion form : Quaternion {s: w, // scalare
                                             v: Vector3 {x: x, y: y, z: z, }}*/
@@ -145,7 +146,7 @@ mod calculator {
                 let x = quat.v.x;
                 let y = quat.v.y;
                 let z = quat.v.z;
-                println!("Quaternion : w={}, x={}, y={}, z={}", w, x, y, z);
+                println!("Quaternion : w={}, x={}, y={}, z={} at t={}", w, x, y, z, state.clock);
 
                 //calculate euler angle thanks to quaternion -> calculate roll, pitch, yaw
                 //roll : rotation around the longitudinal axis (nose to tail)
@@ -155,9 +156,8 @@ mod calculator {
                 let pitch = (2.0_f64*(w*y - z*x)).asin();
                 let yaw = (2.0_f64*(w*z + x*y)).atan2(1.0 - 2.0*(y*y + z*z));
                 state.orientation = (pitch, roll, yaw);
-                println!("Orientation : {:?}", state.orientation);
+                println!("Orientation : {:?} at t={}", state.orientation, state.clock);
             }
-            state.sigma = 3.;
         }
     }
 }
