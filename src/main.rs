@@ -7,6 +7,7 @@ mod data {
         sigma: f64,
         clock: f64,
         quat: Quaternion<f64>,
+        send: bool,
     }
 
     impl DataState {
@@ -15,6 +16,7 @@ mod data {
                 sigma: 1.0,//: f64::INFINITY,
                 clock: 0.0,
                 quat: mint::Quaternion { s: 1.0, v: mint::Vector3 { x: 0.0, y: 0.0, z: 0.0 } },
+                send: false,
             }
         }
     }
@@ -30,26 +32,37 @@ mod data {
     impl xdevs::Atomic for Data {
         fn delta_int(state: &mut Self::State) {
             state.clock += state.sigma;
-            let w: f64 = rand::thread_rng().gen_range(-1.0..=1.0);
-            let x: f64 = rand::thread_rng().gen_range(-1.0..=1.0);
-            let y: f64 = rand::thread_rng().gen_range(-1.0..=1.0);
-            let z: f64 = rand::thread_rng().gen_range(-1.0..=1.0);
-            // Normalize the quaternion to be a valid quaternion 
-            let norm = (w*w + x*x + y*y + z*z).sqrt();
-            let quat = mint::Quaternion {
-                s: w / norm,
-                v: mint::Vector3 { x: x / norm, y: y / norm, z: z / norm },
-            };
-            state.quat = quat;
-
-            println!("Quaternion generated : {:?} at t={} ", state.quat, state.clock);
-            state.sigma = 3.;
+            if state.send ==false {
+                let w: f64 = rand::thread_rng().gen_range(-1.0..=1.0);
+                let x: f64 = rand::thread_rng().gen_range(-1.0..=1.0);
+                let y: f64 = rand::thread_rng().gen_range(-1.0..=1.0);
+                let z: f64 = rand::thread_rng().gen_range(-1.0..=1.0);
+                // Normalize the quaternion to be a valid quaternion 
+                let norm = (w*w + x*x + y*y + z*z).sqrt();
+                let quat = mint::Quaternion {
+                    s: w / norm,
+                    v: mint::Vector3 { x: x / norm, y: y / norm, z: z / norm },
+                };
+                
+                state.quat = quat;
+                println!("Quaternion generated : {:?} at t={} ", state.quat, state.clock);
+                state.sigma = 0.;
+                state.send = !state.send;
+            }
+            else {
+                state.sigma=3.;
+                state.send = !state.send;
+            }
         }
 
         fn lambda(state: &Self::State, output: &mut Self::Output) {
             //put the value of orientation on output
-            let _ = output.data.add_value(state.quat);
-            //println!("Data sent !")
+            if state.send==true {
+                let _ = output.data.add_value(state.quat);
+                println!("Data sent !")
+            }
+            
+            
         }
 
         fn ta(state: &Self::State) -> f64 {
