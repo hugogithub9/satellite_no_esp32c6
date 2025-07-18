@@ -49,7 +49,7 @@ mod data {
         fn lambda(state: &Self::State, output: &mut Self::Output) {
             //put the value of orientation on output
             let _ = output.data.add_value(state.quat);
-            println!("Data sent !")
+            //println!("Data sent !")
         }
 
         fn ta(state: &Self::State) -> f64 {
@@ -59,7 +59,6 @@ mod data {
         fn delta_ext(state: &mut Self::State, e: f64, input: &Self::Input) {
             state.sigma -= e;
             state.clock += e;
-            state.sigma = 0.;
         }
     }
 }
