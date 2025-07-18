@@ -1,0 +1,11 @@
+[package]
+name = "satellite_noesp"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+xdevs-no-std= {git="https://github.com/iscar-ucm/xdevs_no_std.rs.git", features=["std", "embassy"]}
+mint = "^0.5.4"
+bno055 = "0.4.0"
+rand="0.8.5"
+log = "0.4"
